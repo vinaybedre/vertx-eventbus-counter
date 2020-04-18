@@ -1,17 +1,17 @@
 package com.vinaybedre.vertx.counter;
 
-public class Counter{
-  private Integer value;
+public class Counter {
+  private Long value;
 
-  public Counter(Integer value) {
+  public Counter(Long value) {
     this.value = value;
   }
 
-  public Integer getValue() {
+  public Long getValue() {
     return value;
   }
 
-  public void setValue(Integer value) {
+  public void setValue(Long value) {
     this.value = value;
   }
 }

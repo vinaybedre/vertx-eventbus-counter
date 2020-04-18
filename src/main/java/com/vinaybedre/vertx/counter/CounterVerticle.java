@@ -14,7 +14,7 @@ public class CounterVerticle extends AbstractVerticle {
   private CounterHandler counterHandler;
 
   @Override
-  public void start(Promise<Void> startPromise){
+  public void start(Promise<Void> startPromise) {
     counterHandler = new CounterHandler(vertx.sharedData());
 
     Router router = Router.router(vertx);
@@ -22,13 +22,13 @@ public class CounterVerticle extends AbstractVerticle {
     router.get("/:counterId").handler(counterHandler::getCurrentCounter);
     router.patch("/:counterId/increment").handler(counterHandler::incrementCounter);
     router.patch("/:counterId/decrement").handler(counterHandler::decrementCounter);
-    router.mountSubRouter("/eventbus",eventBusHandler());
+    router.mountSubRouter("/eventbus", eventBusHandler());
     router.route().failureHandler(errorHandler());
 
-    vertx.createHttpServer().requestHandler(router).listen(8080,ar->{
-      if(ar.succeeded()){
+    vertx.createHttpServer().requestHandler(router).listen(8080, ar -> {
+      if (ar.succeeded()) {
         startPromise.complete();
-      }else{
+      } else {
         startPromise.fail(ar.cause());
       }
     });

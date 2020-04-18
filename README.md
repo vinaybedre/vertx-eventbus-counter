@@ -1,7 +1,6 @@
 ## Eclipse Vert.X Distributed Counter
 [![Badge](https://img.shields.io/badge/vert.x-4.0.0-purple.svg)](https://vertx.io)
 
-https://img.shields.io/badge/vert.x-4.0.0-milestone4-purple.svg
 This application was generated using http://start.vertx.io
 
 #### Building

@@ -1,37 +1,43 @@
 package com.vinaybedre.vertx.counter;
 
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.Future;
 import io.vertx.core.shareddata.SharedData;
 
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 public class CounterRepository {
-  private final SharedData sharedData;
   private static final String COUNTER = "counter";
+  private static final String LOCK = "counterLock";
+  private final SharedData sharedData;
 
   public CounterRepository(SharedData sharedData) {
     this.sharedData = sharedData;
   }
 
-  public Counter increment(String counterId){
-    LocalMap<String, Integer> localMap = this.sharedData.getLocalMap(COUNTER);
-    Integer currentValue = Optional.ofNullable(localMap.get(counterId)).orElse(0);
-    currentValue++;
-    localMap.put(counterId,currentValue);
-    return new Counter(currentValue);
+  public Future<Counter> increment(String counterId) {
+    return updateAndGet(counterId,value->value+1);
   }
 
-  public Counter decrement(String counterId){
-    LocalMap<String, Integer> localMap = this.sharedData.getLocalMap(COUNTER);
-    Integer currentValue = Optional.ofNullable(localMap.get(counterId)).orElse(0);
-    currentValue--;
-    localMap.put(counterId,currentValue);
-    return new Counter(currentValue);
+  public Future<Counter> decrement(String counterId) {
+    return updateAndGet(counterId,value->value-1);
   }
 
-  public Counter getCurrentCounter(String counterId){
-    LocalMap<String, Integer> localMap = this.sharedData.getLocalMap(COUNTER);
-    Integer currentValue = Optional.ofNullable(localMap.get(counterId)).orElse(0);
-    return new Counter(currentValue);
+  public Future<Counter> getCurrentCounter(String counterId) {
+    return updateAndGet(counterId,value->value);
+  }
+
+  private Future<Counter> updateAndGet(String counterId, UnaryOperator<Long> updateFunction){
+    return this.sharedData.getLock(LOCK)
+      .compose(lock ->
+        this.sharedData.<String, Long>getAsyncMap(COUNTER)
+          .compose(asyncMap -> asyncMap.get(counterId)
+            .map(nullableValue -> {
+              Long value = Optional.ofNullable(nullableValue).orElse(0L);
+              value = updateFunction.apply(value);
+              asyncMap.put(counterId, value);
+              lock.release();
+              return new Counter(value);
+            })));
   }
 }
