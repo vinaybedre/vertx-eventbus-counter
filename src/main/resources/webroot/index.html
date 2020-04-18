@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Eclipse VertX Counter with EventBus</title>
+  <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/1.2.0/tailwind.min.css"/>
+</head>
+<body>
+
+<div class="container mx-auto flex justify-center">
+
+  <div class="max-w-sm rounded shadow-lg text-center">
+    <div class="px-6 py-4">
+      <p class="text-gray-700 text-base">
+        Current Counter Value
+      </p>
+      <div class="font-bold text-4xl" id="counter">-</div>
+    </div>
+    <div class="px-6 py-4">
+      <button onclick="increment()" class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
+        Increment
+      </button>
+      <button onclick="decrement()" class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">Decrement
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vertx/3.8.3/vertx-eventbus.min.js" crossorigin></script>
+<script>
+  const counterId = 1;
+  const eventBus = new EventBus("/eventbus");
+  eventBus.onopen = function () {
+    eventBus.registerHandler(`counter.${counterId}`, null, function (error, message) {
+      document.getElementById("counter").innerText = JSON.parse(message.body).value;
+    });
+  };
+
+  function initCounter(){
+    fetch(`/${counterId}`)
+      .then(response=>response.json())
+      .then(response => {
+      document.getElementById("counter").innerText = response.value;
+    })
+  }
+  initCounter()
+
+  function increment() {
+    fetch(`/${counterId}/increment`, {method: "PATCH"});
+  }
+
+  function decrement() {
+    fetch(`/${counterId}/decrement`, {method: "PATCH"})
+  }
+</script>
+</body>
+</html>
