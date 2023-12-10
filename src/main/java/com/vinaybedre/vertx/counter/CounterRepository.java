@@ -35,8 +35,8 @@ public class CounterRepository {
             .map(nullableValue -> {
               Long value = Optional.ofNullable(nullableValue).orElse(0L);
               value = updateFunction.apply(value);
-              asyncMap.put(counterId, value);
-              lock.release();
+              asyncMap.put(counterId, value)
+                      .onComplete((ar) -> lock.release());
               return new Counter(value);
             })));
   }
